@@ -16,6 +16,22 @@ export default function AdminPage() {
   const [loading, setLoading] = useState(false);
   const [authenticated, setAuthenticated] = useState(false);
   
+  useEffect(() => {
+    // Vérifier si on est côté client
+    if (typeof window !== 'undefined' && authenticated) {
+      // Récupérer les emails du localStorage
+      try {
+        const storedEmails = localStorage.getItem('subscribers');
+        if (storedEmails) {
+          const localSubscribers = JSON.parse(storedEmails);
+          setSubscribers(localSubscribers);
+        }
+      } catch (error) {
+        console.error('Erreur lors de la récupération des données locales:', error);
+      }
+    }
+  }, [authenticated]); // Recharger quand l'authentification change
+  
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -24,24 +40,23 @@ export default function AdminPage() {
       return;
     }
     
-    setLoading(true);
-    setError('');
+    // Vérifier le mot de passe en local (pour simplifier)
+    const ADMIN_PASSWORD = "chanvre-admin-2025";
     
-    try {
-      const response = await fetch(`/api/admin/emails?password=${encodeURIComponent(password)}`);
-      const data = await response.json();
+    if (password === ADMIN_PASSWORD) {
+      setAuthenticated(true);
       
-      if (response.ok) {
-        setSubscribers(data.emails || []);
-        setAuthenticated(true);
-      } else {
-        setError(data.error || 'Mot de passe incorrect');
+      // Récupérer les emails du localStorage
+      try {
+        const storedEmails = localStorage.getItem('subscribers');
+        if (storedEmails) {
+          setSubscribers(JSON.parse(storedEmails));
+        }
+      } catch (error) {
+        console.error('Erreur lors de la récupération des données locales:', error);
       }
-    } catch (err) {
-      setError('Erreur de connexion au serveur');
-      console.error(err);
-    } finally {
-      setLoading(false);
+    } else {
+      setError('Mot de passe incorrect');
     }
   };
   
@@ -95,9 +110,26 @@ export default function AdminPage() {
         <div className="bg-white p-6 rounded-lg shadow-md dark:bg-gray-800">
           <div className="flex justify-between items-center mb-6">
             <h2 className="text-xl font-semibold">Liste des abonnés ({subscribers.length})</h2>
-            <Button variant="outline" onClick={() => setAuthenticated(false)}>
-              Déconnexion
-            </Button>
+            <div className="flex gap-2">
+              <Button variant="outline" onClick={() => {
+                const csvContent = 'data:text/csv;charset=utf-8,' + 
+                  'Email,Date d\'inscription\n' +
+                  subscribers.map(sub => `${sub.email},${sub.timestamp}`).join('\n');
+                
+                const encodedUri = encodeURI(csvContent);
+                const link = document.createElement('a');
+                link.setAttribute('href', encodedUri);
+                link.setAttribute('download', `abonnes-newsletter-${new Date().toISOString().split('T')[0]}.csv`);
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+              }}>
+                Exporter CSV
+              </Button>
+              <Button variant="outline" onClick={() => setAuthenticated(false)}>
+                Déconnexion
+              </Button>
+            </div>
           </div>
           
           {subscribers.length === 0 ? (
