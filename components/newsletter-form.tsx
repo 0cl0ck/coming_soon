@@ -9,45 +9,47 @@ import { AlertCircle, CheckCircle2 } from "lucide-react"
 
 export function NewsletterForm() {
   const [email, setEmail] = useState("")
+  const [message, setMessage] = useState("") 
   const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle")
-  const [message, setMessage] = useState("")
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
-
-    if (!email) {
+    
+    // Validation basique de l'email
+    if (!email || !email.includes("@") || !email.includes(".")) {
       setStatus("error")
-      setMessage("Veuillez entrer votre adresse email.")
+      setMessage("Veuillez entrer une adresse email valide.")
       return
     }
-
+    
     setStatus("loading")
-
-    // Appel à notre API pour stocker l'email dans un fichier texte
-    fetch('/api/subscribe', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ email }),
-    })
-      .then((response) => response.json())
-      .then((data) => {
-        if (data.error) {
-          setStatus("error")
-          setMessage(data.error)
-        } else {
-          setStatus("success")
-          setMessage("Merci ! Vous recevrez nos actualités très bientôt.")
-          setEmail("")
-          console.log("Email enregistré dans le fichier:", email)
-        }
+    setMessage("")
+    
+    try {
+      // Utilisation de Formspree pour collecter les emails
+      const response = await fetch("https://formspree.io/f/xvgkvvyl", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email }),
       })
-      .catch((error) => {
-        console.error('Erreur:', error)
-        setStatus("error")
-        setMessage("Une erreur est survenue. Veuillez réessayer.")
-      })
+      
+      if (response.ok) {
+        setStatus("success")
+        setMessage("Merci ! Vous recevrez nos actualités très bientôt.")
+        setEmail("")
+      } else {
+        const data = await response.json()
+        throw new Error(data.error || "Une erreur est survenue")
+      }
+    } catch (error) {
+      console.error("Erreur:", error)
+      setStatus("error")
+      setMessage("Une erreur est survenue. Veuillez réessayer.")
+    } finally {
+      setStatus("idle")
+    }
   }
 
   return (
