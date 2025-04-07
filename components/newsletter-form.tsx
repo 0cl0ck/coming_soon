@@ -48,7 +48,10 @@ export function NewsletterForm() {
       setStatus("error")
       setMessage("Une erreur est survenue. Veuillez réessayer.")
     } finally {
-      setStatus("idle")
+      // Ne pas réinitialiser le statut en cas de succès pour que le message reste visible
+      if (status !== "success") {
+        setStatus("idle")
+      }
     }
   }
 
