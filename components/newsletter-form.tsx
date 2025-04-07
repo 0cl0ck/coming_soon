@@ -11,6 +11,7 @@ export function NewsletterForm() {
   const [email, setEmail] = useState("")
   const [message, setMessage] = useState("") 
   const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle")
+  const [showSuccess, setShowSuccess] = useState(false)
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
@@ -26,7 +27,24 @@ export function NewsletterForm() {
     setMessage("")
     
     try {
-      // Utilisation de Formspree pour collecter les emails
+      // Vérifier si on est en mode développement local
+      const isDevelopment = process.env.NODE_ENV === 'development' || window.location.hostname === 'localhost';
+      
+      // Si on est en local, simuler une réponse réussie sans envoyer à Formspree
+      if (isDevelopment) {
+        console.log('Mode développement : email non envoyé à Formspree', email);
+        // Simule une réponse réussie après 500ms
+        await new Promise(resolve => setTimeout(resolve, 500));
+        
+        // Configuration pour le teste des messages en local
+        setStatus("success");
+        setShowSuccess(true);
+        setMessage("[TEST LOCAL] Votre email serait enregistré en production. Les emails ne sont pas envoyés en développement.");
+        setEmail("");
+        return;
+      }
+      
+      // En production, utiliser Formspree
       const response = await fetch("https://formspree.io/f/xvgkvvyl", {
         method: "POST",
         headers: {
@@ -37,7 +55,8 @@ export function NewsletterForm() {
       
       if (response.ok) {
         setStatus("success")
-        setMessage("Merci ! Vous recevrez nos actualités très bientôt.")
+        setShowSuccess(true) // Activer explicitement l'affichage du message
+        setMessage("Merci ! Votre email a bien été enregistré. Vous recevrez nos actualités très bientôt.")
         setEmail("")
       } else {
         const data = await response.json()
@@ -83,9 +102,9 @@ export function NewsletterForm() {
           </div>
         )}
 
-        {status === "success" && (
-          <div className="flex items-center text-brand-green dark:text-brand-green-300 text-sm">
-            <CheckCircle2 className="h-4 w-4 mr-1" />
+        {(status === "success" || showSuccess) && (
+          <div className="flex items-center text-brand-green-600 dark:text-brand-green-300 text-sm mt-2 p-2 bg-brand-green-50 dark:bg-brand-green-900/20 rounded-md border border-brand-green-200 dark:border-brand-green-800">
+            <CheckCircle2 className="h-5 w-5 mr-2" />
             <span>{message}</span>
           </div>
         )}
