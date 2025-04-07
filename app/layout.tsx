@@ -8,9 +8,13 @@ const inter = Inter({ subsets: ["latin"] })
 
 export const metadata: Metadata = {
   title: "Chanvre-Vert.fr | Bientôt disponible",
-  description:
-    "Notre site est en cours de développement. Nous préparons une expérience exceptionnelle autour du chanvre de qualité.",
-    generator: 'v0.dev'
+  description: "Un nouveau site est en train de germer! Revenez dans quelques jours",
+  generator: 'v0.dev',
+  icons: {
+    icon: "/logo.ico",
+    shortcut: "/logo.ico",
+    apple: "/logo.ico",
+  }
 }
 
 export default function RootLayout({
@@ -28,7 +32,3 @@ export default function RootLayout({
     </html>
   )
 }
-
-
-
-import './globals.css'

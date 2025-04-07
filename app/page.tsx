@@ -1,13 +1,10 @@
 import Image from "next/image"
-import { Countdown } from "@/components/countdown"
 import { NewsletterForm } from "@/components/newsletter-form"
 import { SocialLinks } from "@/components/social-links"
 import { ThemeToggle } from "@/components/theme-toggle"
 
 export default function ComingSoonPage() {
-  // Date de lancement (exemple: 1 mois à partir de maintenant)
-  const launchDate = new Date()
-  launchDate.setMonth(launchDate.getMonth() + 1)
+  // Pas de date de lancement spécifique
 
   return (
     <main className="flex min-h-screen flex-col items-center justify-center bg-white dark:bg-gray-950 p-4 md:p-8">
@@ -24,15 +21,14 @@ export default function ComingSoonPage() {
           Chanvre-Vert.fr
         </h1>
 
+        <h1 className="text-3xl md:text-4xl font-bold text-brand-green dark:text-brand-green-300 mb-4 max-w-2xl">
+          Le site revient bientôt 🌿
+        </h1>
         <p className="text-xl md:text-2xl text-brand-green dark:text-brand-green-300 mb-8 max-w-2xl">
-          Notre site est en cours de développement. Nous préparons une expérience exceptionnelle autour du chanvre de
-          qualité.
+          Un nouveau site est en train de germer! Revenez dans quelques jours
         </p>
 
-        <div className="w-full max-w-md mb-12">
-          <h2 className="text-xl font-semibold text-brand-green dark:text-brand-green-300 mb-4">Lancement dans</h2>
-          <Countdown targetDate={launchDate} />
-        </div>
+
 
         <div className="w-full max-w-md mb-12">
           <h2 className="text-xl font-semibold text-brand-green dark:text-brand-green-300 mb-4">

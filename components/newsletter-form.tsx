@@ -23,12 +23,31 @@ export function NewsletterForm() {
 
     setStatus("loading")
 
-    // Simuler un appel API
-    setTimeout(() => {
-      setStatus("success")
-      setMessage("Merci ! Vous recevrez nos actualités très bientôt.")
-      setEmail("")
-    }, 1500)
+    // Appel à notre API pour stocker l'email dans un fichier texte
+    fetch('/api/subscribe', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ email }),
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        if (data.error) {
+          setStatus("error")
+          setMessage(data.error)
+        } else {
+          setStatus("success")
+          setMessage("Merci ! Vous recevrez nos actualités très bientôt.")
+          setEmail("")
+          console.log("Email enregistré dans le fichier:", email)
+        }
+      })
+      .catch((error) => {
+        console.error('Erreur:', error)
+        setStatus("error")
+        setMessage("Une erreur est survenue. Veuillez réessayer.")
+      })
   }
 
   return (
