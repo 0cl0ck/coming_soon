@@ -1,16 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-// Référence au stockage temporaire des emails
-// Dans une application réelle, on utiliserait une base de données
-// Cette variable est partagée avec la route d'enregistrement des emails
-// Note: Cette solution est temporaire - les données seront perdues au redéploiement
-declare global {
-  var subscribers: {email: string, timestamp: string}[];
-}
-
-if (!global.subscribers) {
-  global.subscribers = [];
-}
+// Base de données en mémoire - doit être identique à celle dans subscribe/route.ts
+// Pour une vraie app, utilisez MongoDB, Supabase, ou autre
+// Cette DB est réinitialisée à chaque déploiement - c'est temporaire!
+let DB = {
+  subscribers: [] as { email: string; timestamp: string }[]
+};
 
 // Mot de passe d'admin - À REMPLACER par un vrai mot de passe sécurisé
 // Idéalement, utilisez une variable d'environnement (process.env.ADMIN_PASSWORD)
@@ -30,8 +25,8 @@ export async function GET(request: NextRequest) {
       );
     }
     
-    // Accéder aux données stockées en mémoire
-    const emails = global.subscribers || [];
+    // Accéder aux données stockées dans notre DB en mémoire
+    const emails = DB.subscribers;
     
     // Vérifier si des emails ont été enregistrés
     if (emails.length === 0) {

@@ -1,14 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-// Déclaration pour le stockage global des emails (persistant entre les appels d'API)
-declare global {
-  var subscribers: {email: string, timestamp: string}[];
-}
-
-// Initialiser le stockage global s'il n'existe pas déjà
-if (!global.subscribers) {
-  global.subscribers = [];
-}
+// Une solution simple - un fichier DB en mémoire qui sera perdu au redéploiement
+// Pour une vraie app, utilisez MongoDB, Supabase, ou autre
+let DB = {
+  subscribers: [] as { email: string; timestamp: string }[]
+};
 
 export async function POST(request: NextRequest) {
   try {
@@ -32,16 +28,19 @@ export async function POST(request: NextRequest) {
       );
     }
     
-    // Stocker l'email et le timestamp dans notre array en mémoire globale
+    // Ajouter l'email à notre base de données en mémoire
     const timestamp = new Date().toISOString();
-    global.subscribers.push({ email, timestamp });
+    DB.subscribers.push({ email, timestamp });
     
     // Log pour debugging
     console.log(`Email ${email} enregistré à ${timestamp}`);
-    console.log(`Total d'emails stockés: ${global.subscribers.length}`);
+    console.log(`Total d'emails stockés: ${DB.subscribers.length}`);
     
     // Retourner une réponse de succès
-    return NextResponse.json({ success: true });
+    return NextResponse.json({
+      success: true,
+      message: "Merci de votre inscription !"
+    });
   } catch (error) {
     console.error('Erreur lors de l\'enregistrement de l\'email:', error);
     return NextResponse.json(
