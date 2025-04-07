@@ -1,6 +1,14 @@
-import fs from 'fs';
-import path from 'path';
 import { NextRequest, NextResponse } from 'next/server';
+
+// Déclaration pour le stockage global des emails (persistant entre les appels d'API)
+declare global {
+  var subscribers: {email: string, timestamp: string}[];
+}
+
+// Initialiser le stockage global s'il n'existe pas déjà
+if (!global.subscribers) {
+  global.subscribers = [];
+}
 
 export async function POST(request: NextRequest) {
   try {
@@ -24,22 +32,13 @@ export async function POST(request: NextRequest) {
       );
     }
     
-    // Définir le chemin du fichier où stocker les emails dans le répertoire 'data' sécurisé
-    const dataDir = path.join(process.cwd(), 'data');
-    
-    // Vérifier si le répertoire existe, sinon le créer
-    if (!fs.existsSync(dataDir)) {
-      fs.mkdirSync(dataDir, { recursive: true });
-    }
-    
-    const filePath = path.join(dataDir, 'subscribers.txt');
-    
-    // Ajouter l'email au fichier avec timestamp
+    // Stocker l'email et le timestamp dans notre array en mémoire globale
     const timestamp = new Date().toISOString();
-    const data = `${email},${timestamp}\n`;
+    global.subscribers.push({ email, timestamp });
     
-    // Écrire dans le fichier (append)
-    fs.appendFileSync(filePath, data);
+    // Log pour debugging
+    console.log(`Email ${email} enregistré à ${timestamp}`);
+    console.log(`Total d'emails stockés: ${global.subscribers.length}`);
     
     // Retourner une réponse de succès
     return NextResponse.json({ success: true });

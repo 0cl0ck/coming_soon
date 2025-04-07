@@ -1,6 +1,16 @@
-import fs from 'fs';
-import path from 'path';
 import { NextRequest, NextResponse } from 'next/server';
+
+// Référence au stockage temporaire des emails
+// Dans une application réelle, on utiliserait une base de données
+// Cette variable est partagée avec la route d'enregistrement des emails
+// Note: Cette solution est temporaire - les données seront perdues au redéploiement
+declare global {
+  var subscribers: {email: string, timestamp: string}[];
+}
+
+if (!global.subscribers) {
+  global.subscribers = [];
+}
 
 // Mot de passe d'admin - À REMPLACER par un vrai mot de passe sécurisé
 // Idéalement, utilisez une variable d'environnement (process.env.ADMIN_PASSWORD)
@@ -20,28 +30,16 @@ export async function GET(request: NextRequest) {
       );
     }
     
-    // Définir le chemin du fichier où sont stockés les emails
-    const filePath = path.join(process.cwd(), 'data', 'subscribers.txt');
+    // Accéder aux données stockées en mémoire
+    const emails = global.subscribers || [];
     
-    // Vérifier si le fichier existe
-    if (!fs.existsSync(filePath)) {
+    // Vérifier si des emails ont été enregistrés
+    if (emails.length === 0) {
       return NextResponse.json(
         { error: 'Aucun email enregistré pour le moment' },
         { status: 404 }
       );
     }
-    
-    // Lire le contenu du fichier
-    const fileContent = fs.readFileSync(filePath, 'utf-8');
-    
-    // Traiter les emails pour les mettre dans un format JSON
-    const emails = fileContent
-      .split('\n')
-      .filter(line => line.trim() !== '')
-      .map(line => {
-        const [email, timestamp] = line.split(',');
-        return { email, timestamp };
-      });
     
     // Retourner les emails au format JSON
     return NextResponse.json({ 
